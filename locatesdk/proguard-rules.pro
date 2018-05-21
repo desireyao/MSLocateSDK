@@ -19,3 +19,102 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-target 1.8
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,LocalVariable*Table,*Annotation*,Synthetic,EnclosingMethod
+-keepparameternames
+-verbose
+-ignorewarnings
+
+-keep public class * extends android.app.Activity
+
+-keep public class * extends android.app.Application
+
+-keep public class * extends android.app.Service
+
+-keep public class * extends no.nordicsemi.android.dfu.DfuBaseService
+
+-keep public class * extends android.content.BroadcastReceiver
+
+-keep public class * extends android.content.ContentProvider
+
+-keep public class * extends android.app.backup.BackupAgentHelper
+
+-keep public class * extends android.preference.Preference
+
+-keep public class com.android.vending.licensing.ILicensingService
+
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context,android.util.AttributeSet);
+}
+
+-keepclasseswithmembers class * {
+    public <init>(android.content.Context,android.util.AttributeSet,int);
+}
+
+-keepclassmembers class * extends android.app.Activity {
+    public void *(android.view.View);
+}
+
+-keep class * extends android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+# Keep - Library. Keep all public and protected classes, fields, and methods.
+#-keep public class * {
+#    public <fields>;
+#    public <methods>;
+#}
+
+
+#-keep class com.marslocate.beacon.BeaconInfo{
+#    public <fields>;
+#    public <methods>;
+#}
+#
+#-keep class com.marslocate.listener.**{
+#    public <fields>;
+#    public <methods>;
+#}
+#
+#-keep class com.marslocate.model.** {
+#    public <fields>;
+#    public <methods>;
+#}
+#-keep class com.marslocate.network.bean.**{
+#     public <fields>;
+#     public <methods>;
+#}
+
+#-keep public class com.marslocate.**{
+#     public <fields>;
+#     public <methods>;
+#}
+
+-keep public class com.marslocate.**{
+     *;
+}
+
+-keep public class com.beacool.**{
+  *;
+}
+
+#AltBeacon
+-dontwarn org.altbeacon.**
+-keep class org.altbeacon.** { *; }
+-keep interface org.altbeacon.**{ *; }
+
+# Gson library
+-keep class com.google.gson.**{
+    *;
+}
+
+# Also keep - Enumerations. Keep the special static methods that are required in
+# enumeration classes.
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

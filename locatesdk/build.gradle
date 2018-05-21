@@ -1,3 +1,7 @@
+import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.LibraryPlugin
+import proguard.gradle.ProGuardTask
+
 apply plugin: 'com.android.library'
 
 android {
@@ -7,16 +11,25 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
-        versionName "2.14"
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
     }
 
 }
@@ -27,5 +40,67 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     compile 'org.altbeacon:android-beacon-library:2+'
     compile 'com.google.code.gson:gson:2.8.4'
-    implementation files('/Users/yaoh/Documents/code/MarsLocateSDK/LocateSDK/libs/org.apache.http.legacy.jar')
+    compile files('libs/org.apache.http.legacy.jar')
+}
+
+task clearJar(type: Delete) {
+    delete 'build/libs/RTLSLocateLib.jar'
+    delete 'build/libs/proguard-RTLSLocateLib.jar'
+}
+
+task makeJar(dependsOn: ['clearJar', 'build', 'compileReleaseJavaWithJavac'], type: Jar) {
+    //指定生成的jar名
+//    appendix = "demo"
+    baseName = "MarsLocateSDK"
+//    version = "1.0.0"
+//    classifier = "release"
+    //后缀名
+    extension = "jar"
+    //最终的 Jar 包名，如果没设置，默认为 [baseName]-[appendix]-[version]-[classifier].[extension]
+//    archiveName = "CCBWristBand_jd.jar"
+    //需打包的资源所在的路径集
+    def srcClassDir = [project.buildDir.absolutePath + "/intermediates/classes/release/"];
+    //初始化资源路径集
+    from srcClassDir
+    //打包到jar后的目录结构
+//    into('cn/com/jd/')
+    //去除路径集下部分的资源
+//    exclude "**/BuildConfig.class"
+    exclude "**/R.class"
+    exclude { it.name.startsWith('R$'); }
+    //只导入资源路径集下的部分资源
+    //    include "org/chaos/demo/jar/**/*.class"
+    //注: exclude include 支持可变长参数
+}
+
+task makeProguardJar(dependsOn: ['makeJar'], type: ProGuardTask) {
+    //Android 默认的 proguard 文件
+    configuration android.getDefaultProguardFile('proguard-android.txt')
+    //manifest 注册的组件对应的 proguard 文件
+    configuration project.buildDir.absolutePath + "/intermediates/proguard-rules/release/aapt_rules.txt"
+    configuration 'proguard-rules.pro'
+    String inJar = makeJar.archivePath.getAbsolutePath()
+    //输入 jar
+    injars inJar
+    //输出 jar
+    outjars inJar.substring(0, inJar.lastIndexOf(File.separator)) + "/proguard-${makeJar.archiveName}"
+    //设置不删除未引用的资源(类，方法等)
+    dontshrink
+    Plugin plugin = getPlugins().hasPlugin(AppPlugin) ?
+            getPlugins().findPlugin(AppPlugin) :
+            getPlugins().findPlugin(LibraryPlugin)
+    if (plugin != null) {
+        List<String> runtimeJarList
+        if (plugin.getMetaClass().getMetaMethod("getRuntimeJarList")) {
+            runtimeJarList = plugin.getRuntimeJarList()
+        } else if (android.getMetaClass().getMetaMethod("getBootClasspath")) {
+            runtimeJarList = android.getBootClasspath()
+        } else {
+            runtimeJarList = plugin.getBootClasspath()
+        }
+        for (String runtimeJar : runtimeJarList) {
+            //给 proguard 添加 runtime
+            libraryjars(runtimeJar)
+        }
+    }
 }

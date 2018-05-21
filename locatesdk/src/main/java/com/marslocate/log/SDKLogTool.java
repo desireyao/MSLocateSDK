@@ -21,7 +21,7 @@ public class SDKLogTool {
 
     private static volatile SDKLogTool mInstance;
 
-    private static boolean isShowD = BuildConfig.DEBUG;
+    private static boolean isShowD = BuildConfig.DEBUG || true;
     private static boolean isShowI = true;
     private static boolean isShowE = true;
     private static boolean isShowV = false;
@@ -93,6 +93,12 @@ public class SDKLogTool {
                 info = getLogPosition() + " " + info;
             Log.e(TAG, info);
         }
+    }
+
+    // 一直打印
+    public static void showLog(String TAG, String info) {
+        info = getLogPosition() + " " + info;
+        Log.e(TAG, info);
     }
 
     public static void LogE_DEBUG(String TAG, String info) {

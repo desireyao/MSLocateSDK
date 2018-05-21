@@ -42,8 +42,9 @@ public class NetworkManager {
 
     public void init(Context context, String key) {
         mContext = context.getApplicationContext();
-        mQueue = Volley.newRequestQueue(mContext);
         mKey = key;
+
+        mQueue = Volley.newRequestQueue(mContext);
     }
 
     private void doGetStringRequest(String requestParams, final BaseHttpCallback callback) {
@@ -84,16 +85,24 @@ public class NetworkManager {
      *
      * @param callback
      */
-    public void queryAllNetworkList(BaseHttpCallback callback) {
+    public void getAllNetworkList(BaseHttpCallback callback) {
         String params = "/v1/network/";
         doGetStringRequest(params, callback);
     }
 
     /**
-     * 获取地图列表
+     * 查询当前网络的所有 beacon 信息
      */
-    public void getMapsList(String networkId, BaseHttpCallback callback) {
-        String params = "/v1/network/" + networkId + "/map";
+    public void getNetworkAllBeacons(String networkId, BaseHttpCallback callback) {
+        String params = "/v1/network/" + networkId + "/map/ibeacon";
+        doGetStringRequest(params, callback);
+    }
+
+    /**
+     * 获取地图信息
+     */
+    public void getMapInfo(String networkId, int mapId, BaseHttpCallback callback) {
+        String params = "/v1/network/" + networkId + "/map/" + mapId;
         doGetStringRequest(params, callback);
     }
 

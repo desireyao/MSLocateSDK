@@ -1,8 +1,10 @@
 package com.marslocate.listener;
 
 
-import com.marslocate.model.MSNetworkList;
+import com.marslocate.model.MSNetworkInfo;
 import com.marslocate.network.enums.EnumStatus;
+
+import java.util.List;
 
 /**
  * Created by yaoh on 2018/5/18.
@@ -10,6 +12,6 @@ import com.marslocate.network.enums.EnumStatus;
 
 public interface MSQueryAllNetworkListner {
 
-    public void onQueryAllNetworkList(EnumStatus status, MSNetworkList networks);
+    public void onQueryAllNetworkList(EnumStatus status, List<MSNetworkInfo> networkInfos);
 
 }

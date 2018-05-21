@@ -1,32 +1,31 @@
 package com.zx.mslocate;
 
 import android.Manifest;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.marslocate.listener.MSLocationListener;
+import com.marslocate.listener.MSQueryAllNetworkListner;
 import com.marslocate.log.SDKLogTool;
+import com.marslocate.model.MSLocationMapInfo;
+import com.marslocate.model.MSLocationPosition;
+import com.marslocate.model.MSNetworkInfo;
+import com.marslocate.network.enums.EnumStatus;
 import com.marslocate.sdk.MSLocateSDKManager;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
-import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.BeaconTransmitter;
-import org.altbeacon.beacon.Identifier;
-import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, BeaconConsumer {
 
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(IBEACON_FORMAT));
 
 //        SDKLogTool.LogE_DEBUG(TAG, " beaconManager.isBound = " + beaconManager.isBound(this));
-        mSDK = MSLocateSDKManager.initSDK(this, "");
+        mSDK = MSLocateSDKManager.initSDK(this, "pre_q145g2o45426k8r479I0J44618A2kE52H4N0OU7Mfn86z55i84rqkByUpVD024u4Nl587t2M218CI0QD");
     }
 
     @Override
@@ -76,9 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
 
-        mSDK.stop();
-//        beaconManager.removeAllRangeNotifiers();
-//        beaconManager.unbind(this);
+        mSDK.stopLocation();
     }
 
     @Override
@@ -87,8 +84,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.btn_beancon) {
             startBeacon();
         } else if (id == R.id.btn_test) {
-            mSDK.start();
+//            mSDK.start();
 //            beaconManager.bind(this);
+            mSDK.queryAllNetworkList(new MSQueryAllNetworkListner() {
+                @Override
+                public void onQueryAllNetworkList(EnumStatus status, List<MSNetworkInfo> networks) {
+                    SDKLogTool.LogE_DEBUG(TAG, " onQueryAllNetworkList = " + status.name()
+                            + " networks = " + networks.toString());
+                    if (networks.isEmpty()) {
+                        return;
+                    }
+
+                    mSDK.startLocation(networks.get(0).getNetworkId(), new MSLocationListener() {
+
+                        @Override
+                        public void onMapChanged(MSLocationMapInfo mapInfo) {
+                            SDKLogTool.showLog(TAG, " onMapChanged --->  mapInfo = " + mapInfo.toString());
+                        }
+
+                        @Override
+                        public void onLocationChanged(MSLocationPosition location) {
+                            SDKLogTool.showLog(TAG, " onLocationChanged ---> location = " + location.toString());
+                        }
+                    });
+                }
+            });
         }
     }
 
