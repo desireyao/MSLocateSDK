@@ -8,11 +8,10 @@ import java.util.List;
 
 public class GetMapInfo {
 
-
     /**
      * result : 0
      * message : 查询地图列表成功
-     * data : {"mapLists":[{"mapId":147,"deviceCount":9,"height":713,"originCoordinate_x":0,"width":609,"networkId":"1002C0","originCoordinate_y":0,"serNum":1,"mapName":"测试","mapUrl":"http://m4.beacool.com/iot_file/image/963ea0e076184da4a7aa148bfdbe8b46F2.jpg"}]}
+     * data : {"mapLists":[{"scale":80,"mapId":157,"deviceCount":4,"height":4098,"originCoordinate_x":0,"width":5216,"networkId":"1002DB","originCoordinate_y":0,"serNum":2,"mapName":"办公室","mapUrl":"http://m4.beacool.com/iot_file/image/8fa068a0a5bf455082e12ce3c6e6397bOX99GMWO7GQQV4LCN64BJ(N.png"}]}
      */
 
     private int result;
@@ -56,18 +55,20 @@ public class GetMapInfo {
 
         public static class MapListsBean {
             /**
-             * mapId : 147
-             * deviceCount : 9
-             * height : 713
+             * scale : 80
+             * mapId : 157
+             * deviceCount : 4
+             * height : 4098
              * originCoordinate_x : 0
-             * width : 609
-             * networkId : 1002C0
+             * width : 5216
+             * networkId : 1002DB
              * originCoordinate_y : 0
-             * serNum : 1
-             * mapName : 测试
-             * mapUrl : http://m4.beacool.com/iot_file/image/963ea0e076184da4a7aa148bfdbe8b46F2.jpg
+             * serNum : 2
+             * mapName : 办公室
+             * mapUrl : http://m4.beacool.com/iot_file/image/8fa068a0a5bf455082e12ce3c6e6397bOX99GMWO7GQQV4LCN64BJ(N.png
              */
 
+            private int scale;
             private int mapId;
             private int deviceCount;
             private int height;
@@ -78,6 +79,14 @@ public class GetMapInfo {
             private int serNum;
             private String mapName;
             private String mapUrl;
+
+            public int getScale() {
+                return scale;
+            }
+
+            public void setScale(int scale) {
+                this.scale = scale;
+            }
 
             public int getMapId() {
                 return mapId;

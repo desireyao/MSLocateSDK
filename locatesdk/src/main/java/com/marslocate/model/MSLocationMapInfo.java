@@ -20,7 +20,7 @@ public class MSLocationMapInfo {
         return mapId;
     }
 
-    public void setMapId(int mapId) {
+    private void setMapId(int mapId) {
         this.mapId = mapId;
     }
 
@@ -28,7 +28,7 @@ public class MSLocationMapInfo {
         return mapName;
     }
 
-    public void setMapName(String mapName) {
+    private void setMapName(String mapName) {
         this.mapName = mapName;
     }
 
@@ -36,7 +36,7 @@ public class MSLocationMapInfo {
         return mapUrl;
     }
 
-    public void setMapUrl(String mapUrl) {
+    private void setMapUrl(String mapUrl) {
         this.mapUrl = mapUrl;
     }
 
@@ -44,7 +44,7 @@ public class MSLocationMapInfo {
         return width;
     }
 
-    public void setWidth(double width) {
+    private void setWidth(double width) {
         this.width = width;
     }
 
@@ -52,7 +52,7 @@ public class MSLocationMapInfo {
         return height;
     }
 
-    public void setHeight(double height) {
+    private void setHeight(double height) {
         this.height = height;
     }
 

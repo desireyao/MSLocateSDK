@@ -18,7 +18,7 @@ public class MSLocationPosition {
         return positionX;
     }
 
-    public void setPositionX(float positionX) {
+    private void setPositionX(float positionX) {
         this.positionX = positionX;
     }
 
@@ -26,7 +26,7 @@ public class MSLocationPosition {
         return positionY;
     }
 
-    public void setPositionY(float positionY) {
+    private void setPositionY(float positionY) {
         this.positionY = positionY;
     }
 

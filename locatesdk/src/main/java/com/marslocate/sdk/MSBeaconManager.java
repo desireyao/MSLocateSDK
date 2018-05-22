@@ -68,6 +68,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
     private float mDirDegree, mDirDegree360;
     private Sensor mSensorAcc, mSensorMag;
     private SensorManager mSensorManager;
+    private int mScale;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -171,7 +172,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                             mExecutor = new ScheduledThreadPoolExecutor(1);
                             mExecutor.schedule(new SersorChangedTask(), 100, TimeUnit.MILLISECONDS);
                         } else {
-                            mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_EMPTY_BEACON);
+                            mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_DATA_ERROR);
                         }
                     } else {
                         mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_DATA_ERROR);
@@ -181,7 +182,6 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                 @Override
                 public void onError(EnumStatus errorMsg) {
                     SDKLogTool.showE(TAG, errorMsg.toString());
-                    mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_NETWORK_ERROR);
                 }
             });
         }
@@ -239,9 +239,11 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
         }
 
         // 说明获取到正确的地图信息 每次计算一次坐标
-        if (mCurMapId != -1) {
-            mExecutor.execute(new LocationChangedTask(beacons));
-        }
+//        if (mCurMapId != -1) {
+//            mExecutor.execute(new LocationChangedTask(beacons));
+//        }
+
+        mExecutor.execute(new LocationChangedTask(beacons));
 
         // 累计几次计算地图信息
         if (mCountRanging >= 5) {
@@ -328,6 +330,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                 default:
                     break;
             }
+
             calculateOrientation();
         }
 
@@ -349,8 +352,6 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
         } else if (mDirDegree >= 0 && mDirDegree <= 180) {
             mDirDegree360 = mDirDegree;
         }
-
-//        SDKLogTool.LogE_DEBUG(TAG, " mDirDegree360 ---> " + mDirDegree360);
     }
 
     /**
@@ -405,7 +406,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                     + " \t thread.name = " + Thread.currentThread().getName()
                     + " \n mListIntoAlgorithm ------> " + mListIntoAlgorithm.toString());
 
-            if (!mListIntoAlgorithm.isEmpty()) {
+            if (!mListIntoAlgorithm.isEmpty() && mCurMapId != -1) {
                 calculatePosition();
             }
 
@@ -463,6 +464,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                                 mLocationListener.onMapChanged(MSLocationMapInfo.parseData(response));
                                 // 说明切换到新的地图
                                 mCurMapId = mapId;
+                                mScale = response.getData().getMapLists().get(0).getScale();
 
                                 mScannedBeacons.clear();
                                 mCountRanging = 0;
@@ -490,9 +492,9 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
      */
     private void calculatePosition() {
         List<BeaconInfo> mListBeacon = new ArrayList<>(mListIntoAlgorithm.values());
-        if (mListBeacon.size() < 3) {
-            return;
-        }
+//        if (mListBeacon.size() < 3) {
+//            return;
+//        }
 
         Collections.sort(mListBeacon, new BeaconRSSIComparator());
         int len = mListBeacon.size() > 10 ? 10 : mListBeacon.size();
@@ -511,8 +513,15 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
             minor[i] = (short) item.getMinorID();
             rssi[i] = item.getRssi();
             distance[i] = (float) item.getDistance();
-            beaconpos_x[i] = (float) item.getCoordinateX();
-            beaconpos_y[i] = (float) item.getCoordinateY();
+
+            int beacon_x = (int) (item.getCoordinateX() * mScale);
+            int beacon_y = (int) (item.getCoordinateY() * mScale);
+            beaconpos_x[i] = beacon_x;
+            beaconpos_y[i] = beacon_y;
+
+            // test
+//            beaconpos_x[i] = 2573.f;
+//            beaconpos_y[i] = 2736.f;
             floor[i] = 1; // 这里楼层先固定 1
 
             SDKLogTool.LogD(TAG, "item[" + i + "]"
@@ -525,7 +534,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                     + " floor = " + floor[i]);
         }
         // 清空进入算法的 beacon
-//        mListIntoAlgorithm.clear();
+        mListIntoAlgorithm.clear();
 
         int res = BeacoolJniHelper.CYWBeaconPositionPoll(0,
                 len, major, minor, rssi, distance, beaconpos_x, beaconpos_y, floor, mDirDegree360);
@@ -537,6 +546,10 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
             final float curX = BeacoolJniHelper.CYWGetPosXOut(0);
             final float curY = BeacoolJniHelper.CYWGetPosYOut(0);
             SDKLogTool.LogE_DEBUG(TAG, "doGetPosJni---> " + " curX = " + curX + " curY = " + curY);
+
+            if (curX == 0 && curY == 0) {
+                return;
+            }
 
             /**
              * 回调位置信息
@@ -556,19 +569,19 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
      * @param uuid
      * @param major
      * @param minor
-     * @param macaddress
+     * @param macAddress
      * @return
      */
-    private String checkKey(String uuid, int major, int minor, String macaddress) {
-        macaddress = macaddress.replace(":", "");
+    private String checkKey(String uuid, int major, int minor, String macAddress) {
+        macAddress = macAddress.replace(":", "");
         StringBuffer buffer = new StringBuffer();
         buffer.append(uuid)
                 .append("-")
                 .append(String.valueOf(major))
                 .append("-")
-                .append(String.valueOf(minor));
-//                .append("-")
-//                .append(macaddress);
+                .append(String.valueOf(minor))
+                .append("-")
+                .append(macAddress);
 //        SDKLogTool.LogE_DEBUG(TAG, "checkKey --->" + buffer.toString());
         return buffer.toString();
     }

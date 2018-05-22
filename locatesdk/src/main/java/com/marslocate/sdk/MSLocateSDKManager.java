@@ -96,6 +96,11 @@ public class MSLocateSDKManager {
             return;
         }
 
+        if (!SDKUtil.isNetworkAvailable(mContext)) {
+            listener.onLocationStatus(EnumLocationStatus.STATUS_NETWORK_NOT_AVAILABLE);
+            return;
+        }
+
         mBeaconManager.startLocation(networkId, listener);
 
     }

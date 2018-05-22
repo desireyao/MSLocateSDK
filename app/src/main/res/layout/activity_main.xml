@@ -4,9 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#eeeeee"
     android:orientation="vertical"
-    android:padding="16dp"
     tools:context="com.zx.mslocate.MainActivity">
+
+    <Button
+        android:id="@+id/btn_startLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="开始定位" />
 
     <Button
         android:id="@+id/btn_test"
@@ -14,11 +20,22 @@
         android:layout_height="wrap_content"
         android:text="测试按钮" />
 
-    <Button
-        android:id="@+id/btn_beancon"
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="模拟beancon发信号" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"
+        >
+
+        <com.beacool.widget.locate.widgets.image.LocViewLayout
+            android:id="@+id/layout_LocView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="#eeeeee"
+            />
+
+    </RelativeLayout>
 
 
 </LinearLayout>

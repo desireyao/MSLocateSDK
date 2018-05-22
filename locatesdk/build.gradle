@@ -8,7 +8,7 @@ android {
     compileSdkVersion 26
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
         versionName "1.0.0"
@@ -38,8 +38,8 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
     testImplementation 'junit:junit:4.12'
+
     compile 'org.altbeacon:android-beacon-library:2+'
-//    compile 'com.google.code.gson:gson:2.8.4'
     compile files('libs/org.apache.http.legacy.jar')
 }
 
