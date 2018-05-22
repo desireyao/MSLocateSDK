@@ -96,7 +96,12 @@ public class SDKLogTool {
     }
 
     // 一直打印
-    public static void showLog(String TAG, String info) {
+    public static void showE(String TAG, String info) {
+        info = getLogPosition() + " " + info;
+        Log.e(TAG, info);
+    }
+
+    public static void showD(String TAG, String info) {
         info = getLogPosition() + " " + info;
         Log.e(TAG, info);
     }

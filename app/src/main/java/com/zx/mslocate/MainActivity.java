@@ -17,6 +17,7 @@ import com.marslocate.model.MSLocationPosition;
 import com.marslocate.model.MSNetworkInfo;
 import com.marslocate.network.enums.EnumStatus;
 import com.marslocate.sdk.MSLocateSDKManager;
+import com.marslocate.sdk.enums.EnumLocationStatus;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -84,13 +85,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.btn_beancon) {
             startBeacon();
         } else if (id == R.id.btn_test) {
-//            mSDK.start();
-//            beaconManager.bind(this);
+
             mSDK.queryAllNetworkList(new MSQueryAllNetworkListner() {
                 @Override
                 public void onQueryAllNetworkList(EnumStatus status, List<MSNetworkInfo> networks) {
                     SDKLogTool.LogE_DEBUG(TAG, " onQueryAllNetworkList = " + status.name()
-                            + " networks = " + networks.toString());
+                            + " \n " + networks.toString());
+
                     if (networks.isEmpty()) {
                         return;
                     }
@@ -99,12 +100,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         @Override
                         public void onMapChanged(MSLocationMapInfo mapInfo) {
-                            SDKLogTool.showLog(TAG, " onMapChanged --->  mapInfo = " + mapInfo.toString());
+                            SDKLogTool.showE(TAG, " onMapChanged --->  mapInfo = " + mapInfo.toString());
                         }
 
                         @Override
                         public void onLocationChanged(MSLocationPosition location) {
-                            SDKLogTool.showLog(TAG, " onLocationChanged ---> location = " + location.toString());
+                            SDKLogTool.showE(TAG, " onLocationChanged ---> location = " + location.toString());
+                        }
+
+                        @Override
+                        public void onLocationStatus(EnumLocationStatus status) {
+                            SDKLogTool.showE(TAG, "onLocationStatus ---> " + status.name());
                         }
                     });
                 }

@@ -32,10 +32,10 @@ public class MSNetworkInfo {
 
     @Override
     public String toString() {
-        return "\n {" +
+        return " { " +
                 "networkId='" + networkId + '\'' +
-                ", networkName='" + networkName + '\'' +
-                '}';
+                ",networkName='" + networkName + '\'' +
+                " } \n";
     }
 
     public static List<MSNetworkInfo> parseData(GetAllNetworkList data) {

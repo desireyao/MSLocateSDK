@@ -27,6 +27,7 @@ import com.marslocate.network.bean.GetMapInfo;
 import com.marslocate.network.bean.GetNetworkAllBeacons;
 import com.marslocate.network.callback.JsonObjectCallback;
 import com.marslocate.network.enums.EnumStatus;
+import com.marslocate.sdk.enums.EnumLocationStatus;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -53,7 +54,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
 
     private static final String TAG = "MSBeaconManager";
 
-    public static final String IBEACON_FORMAT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24";
+    private static final String IBEACON_FORMAT = "m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24";
 
     private static final int ACC_UPDATE_INTERVAL = 20;
 
@@ -91,7 +92,6 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
     /**
      * 缓存当前网络所有的 beacon 信息
      */
-    private boolean isProcessingLocationTask;
     private boolean isProcessingLocationMapTask;
 
     /**
@@ -124,7 +124,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
 
 
     public void startLocation(String networkId, MSLocationListener locationListener) {
-        SDKLogTool.LogE_DEBUG(TAG, " beaconManager.isBound ---> " + beaconManager.isBound(this));
+        SDKLogTool.LogE_DEBUG(TAG, " isBound ---> " + beaconManager.isBound(this));
         if (!beaconManager.isBound(this)) {
             mNetworkId = networkId;
             mLocationListener = locationListener;
@@ -162,6 +162,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
 
                             // 开始定位
                             beaconManager.bind(MSBeaconManager.this);
+
                             // 开启传感器的监听
                             startRegistSensor();
                             if (mExecutor != null) {
@@ -169,19 +170,20 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                             }
                             mExecutor = new ScheduledThreadPoolExecutor(1);
                             mExecutor.schedule(new SersorChangedTask(), 100, TimeUnit.MILLISECONDS);
+                        } else {
+                            mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_EMPTY_BEACON);
                         }
+                    } else {
+                        mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_DATA_ERROR);
                     }
                 }
 
                 @Override
                 public void onError(EnumStatus errorMsg) {
-                    SDKLogTool.showLog(TAG, errorMsg.toString());
+                    SDKLogTool.showE(TAG, errorMsg.toString());
+                    mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_NETWORK_ERROR);
                 }
             });
-
-            // ---> end
-//           mExecutor.scheduleAtFixedRate(mSersorChangedTask, ACC_UPDATE_INTERVAL, ACC_UPDATE_INTERVAL,
-//                    TimeUnit.MILLISECONDS);
         }
     }
 
@@ -230,7 +232,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
         SDKLogTool.LogE_DEBUG(TAG, "didRangeBeaconsInRegion------------> beacons.size = " + beacons.size());
 
         for (Beacon beacon : beacons) {
-            Log.e(TAG, "ranging------> beacon = " + beacon.toString()
+            SDKLogTool.LogD(TAG, "ranging------> beacon = " + beacon.toString()
                     + " \n rssi = " + beacon.getRssi()
                     + " \t distance = " + beacon.getDistance()
                     + " \t macaddress = " + beacon.getBluetoothAddress());
@@ -283,7 +285,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
         for (Beacon beacon : beacons) {
 
             if (!mCacheBeacons.containsKey(checkKey(beacon))) {
-                SDKLogTool.LogE_DEBUG(TAG, "processBeaconWithRSSI---> 过滤 : " + checkKey(beacon));
+                SDKLogTool.LogD(TAG, "processBeaconWithRSSI---> 过滤 : " + checkKey(beacon));
                 continue;
             }
 
@@ -391,7 +393,6 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
         @Override
         public void run() {
             for (Beacon beacon : mBeacons) {
-
                 if (mCacheBeacons.containsKey(checkKey(beacon))) {
                     BeaconInfo beaconInfo = mCacheBeacons.get(checkKey(beacon));
                     beaconInfo.setRssi(beacon.getRssi());
@@ -401,7 +402,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
             }
 
             SDKLogTool.LogE_DEBUG(TAG, "CalcutePositionTask ---> "
-                    + " thread.name = " + Thread.currentThread().getName()
+                    + " \t thread.name = " + Thread.currentThread().getName()
                     + " \n mListIntoAlgorithm ------> " + mListIntoAlgorithm.toString());
 
             if (!mListIntoAlgorithm.isEmpty()) {
@@ -466,6 +467,8 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
                                 mScannedBeacons.clear();
                                 mCountRanging = 0;
                                 isProcessingLocationMapTask = false;
+                            } else {
+                                mLocationListener.onLocationStatus(EnumLocationStatus.STATUS_DATA_ERROR);
                             }
                         }
 
@@ -487,6 +490,10 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
      */
     private void calculatePosition() {
         List<BeaconInfo> mListBeacon = new ArrayList<>(mListIntoAlgorithm.values());
+        if (mListBeacon.size() < 3) {
+            return;
+        }
+
         Collections.sort(mListBeacon, new BeaconRSSIComparator());
         int len = mListBeacon.size() > 10 ? 10 : mListBeacon.size();
 
@@ -506,18 +513,20 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
             distance[i] = (float) item.getDistance();
             beaconpos_x[i] = (float) item.getCoordinateX();
             beaconpos_y[i] = (float) item.getCoordinateY();
-            floor[i] = 1; // 这里楼层先写死1
+            floor[i] = 1; // 这里楼层先固定 1
 
             SDKLogTool.LogD(TAG, "item[" + i + "]"
-                    + " major  = " + major
-                    + " minor = " + minor
-                    + " beaconpos_x = " + beaconpos_x
-                    + " beaconpos_y = " + beaconpos_y
-                    + " rssi = " + rssi
-                    + " distance = " + distance
-                    + " floor = " + floor);
+                    + " major  = " + major[i]
+                    + " minor = " + minor[i]
+                    + " beaconpos_x = " + beaconpos_x[i]
+                    + " beaconpos_y = " + beaconpos_y[i]
+                    + " rssi = " + rssi[i]
+                    + " distance = " + distance[i]
+                    + " floor = " + floor[i]);
         }
-        mListBeacon.clear();
+        // 清空进入算法的 beacon
+//        mListIntoAlgorithm.clear();
+
         int res = BeacoolJniHelper.CYWBeaconPositionPoll(0,
                 len, major, minor, rssi, distance, beaconpos_x, beaconpos_y, floor, mDirDegree360);
 
@@ -550,7 +559,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
      * @param macaddress
      * @return
      */
-    public String checkKey(String uuid, int major, int minor, String macaddress) {
+    private String checkKey(String uuid, int major, int minor, String macaddress) {
         macaddress = macaddress.replace(":", "");
         StringBuffer buffer = new StringBuffer();
         buffer.append(uuid)
@@ -564,7 +573,7 @@ public class MSBeaconManager implements BeaconConsumer, RangeNotifier {
         return buffer.toString();
     }
 
-    public String checkKey(Beacon beacon) {
+    private String checkKey(Beacon beacon) {
         String key = checkKey(beacon.getId1().toString(),
                 beacon.getId2().toInt(),
                 beacon.getId3().toInt(),

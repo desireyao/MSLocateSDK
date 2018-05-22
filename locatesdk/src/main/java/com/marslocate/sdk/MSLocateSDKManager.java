@@ -1,7 +1,9 @@
 package com.marslocate.sdk;
 
 import android.content.Context;
+import android.util.Log;
 
+import com.marslocate.BuildConfig;
 import com.marslocate.listener.MSLocationListener;
 import com.marslocate.listener.MSQueryAllNetworkListner;
 import com.marslocate.log.SDKLogTool;
@@ -11,6 +13,8 @@ import com.marslocate.network.bean.GetAllNetworkList;
 import com.marslocate.network.bean.GetMapInfo;
 import com.marslocate.network.callback.JsonObjectCallback;
 import com.marslocate.network.enums.EnumStatus;
+import com.marslocate.sdk.enums.EnumLocationStatus;
+import com.marslocate.util.SDKUtil;
 
 /**
  * Created by yaoh on 2018/5/19.
@@ -28,6 +32,7 @@ public class MSLocateSDKManager {
     private NetworkManager networkManager;
     private String mKey;
 
+
     private MSLocateSDKManager(Context context, String key) {
         mContext = context.getApplicationContext();
         mKey = key;
@@ -42,6 +47,8 @@ public class MSLocateSDKManager {
         if (key.isEmpty()) {
             throw new IllegalArgumentException(" key cannot be empty!");
         }
+
+        Log.e("MarsLocateSDK", " sdk verison ------> " + BuildConfig.VERSION_NAME);
 
         if (mInstance == null) {
             mInstance = new MSLocateSDKManager(context, key);
@@ -82,6 +89,11 @@ public class MSLocateSDKManager {
 
         if (networkId.isEmpty()) {
             throw new IllegalArgumentException(" networkId cannot be empty!");
+        }
+
+        if (!SDKUtil.isBLESwitchOn()) {
+            listener.onLocationStatus(EnumLocationStatus.STATUS_BLE_NOT_OPEN);
+            return;
         }
 
         mBeaconManager.startLocation(networkId, listener);

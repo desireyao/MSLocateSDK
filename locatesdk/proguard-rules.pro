@@ -69,36 +69,54 @@
 #    public <methods>;
 #}
 
-
 #-keep class com.marslocate.beacon.BeaconInfo{
 #    public <fields>;
 #    public <methods>;
 #}
+
+-keep class com.marslocate.listener.**{
+    public <fields>;
+    public <methods>;
+}
+
 #
-#-keep class com.marslocate.listener.**{
-#    public <fields>;
-#    public <methods>;
-#}
-#
-#-keep class com.marslocate.model.** {
-#    public <fields>;
-#    public <methods>;
-#}
-#-keep class com.marslocate.network.bean.**{
-#     public <fields>;
-#     public <methods>;
+-keep class com.marslocate.model.** {
+    public <fields>;
+    public <methods>;
+}
+
+#-keep class com.marslocate.network.**{
+#     *;
 #}
 
-#-keep public class com.marslocate.**{
-#     public <fields>;
-#     public <methods>;
-#}
-
--keep public class com.marslocate.**{
+-keep class com.marslocate.network.bean.**{
      *;
 }
 
--keep public class com.beacool.**{
+-keep class com.marslocate.network.enums.**{
+     *;
+}
+
+-keep class com.marslocate.sdk.** {
+    public <fields>;
+    public <methods>;
+}
+
+-keep class com.marslocate.log.** {
+    public <fields>;
+    public <methods>;
+}
+
+-keep class com.marslocate.util.** {
+    public <fields>;
+    public <methods>;
+}
+
+-keep class com.marslocate.volley.** {
+    *;
+}
+
+-keep public class com.beacool.jni{
   *;
 }
 

@@ -31,13 +31,11 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
 
+    compile 'org.altbeacon:android-beacon-library:2+'
     compile project(':locatesdk')
 
-//    compile 'org.altbeacon:android-beacon-library:2+'
 //    compile 'com.google.code.gson:gson:2.8.2'
-
 //    compile files('libs/proguard-MarsLocateSDK.jar')
-//    compile files('libs/org.apache.http.legacy.jar')
 }
 
 

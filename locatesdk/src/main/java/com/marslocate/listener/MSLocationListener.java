@@ -2,6 +2,7 @@ package com.marslocate.listener;
 
 import com.marslocate.model.MSLocationMapInfo;
 import com.marslocate.model.MSLocationPosition;
+import com.marslocate.sdk.enums.EnumLocationStatus;
 
 /**
  * Created by yaoh on 2018/5/21.
@@ -23,5 +24,6 @@ public interface MSLocationListener {
     /**
      * location 状态信息
      */
-//    public void onLocationStatus();
+    public void onLocationStatus(EnumLocationStatus status);
+
 }

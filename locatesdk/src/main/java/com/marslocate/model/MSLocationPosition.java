@@ -29,4 +29,12 @@ public class MSLocationPosition {
     public void setPositionY(float positionY) {
         this.positionY = positionY;
     }
+
+    @Override
+    public String toString() {
+        return " [" +
+                "  positionX = " + positionX +
+                ", positionY = " + positionY +
+                ']';
+    }
 }
